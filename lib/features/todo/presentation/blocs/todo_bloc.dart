@@ -1,51 +1,54 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:to_do_app/features/todo/data/repositories/todo_repository.dart';
 import 'package:to_do_app/features/todo/domain/entities/to_do_modal.dart';
 import 'package:to_do_app/features/todo/domain/repositories/todo_repository.dart';
-
 import 'todo_event.dart';
 import 'todo_state.dart';
 
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
   final TodoRepository repository;
 
-  TodoBloc(this.repository) : super(TodosLoading());
-
-  @override
-  Stream<TodoState> mapEventToState(TodoEvent event) async* {
-    if (event is LoadTodos) {
-      yield* _mapLoadTodosToState();
-    } else if (event is AddOrUpdateTodo) {
-      yield* _mapAddOrUpdateTodoToState(event.todo);
-    } else if (event is DeleteTodo) {
-      yield* _mapDeleteTodoToState(event.id);
-    }
+  TodoBloc(this.repository) : super(TodosLoading()) {
+    // Registering event handlers with `on<>`
+    on<LoadTodos>(_onLoadTodos);
+    on<AddOrUpdateTodo>(_onAddOrUpdateTodo);
+    on<DeleteTodo>(_onDeleteTodo);
   }
 
-  Stream<TodoState> _mapLoadTodosToState() async* {
+  Future<void> _onLoadTodos(
+    LoadTodos event,
+    Emitter<TodoState> emit,
+  ) async {
     try {
       final todos = await repository.getTodos().first;
-      yield TodosLoaded(todos);
+      emit(TodosLoaded(todos));
     } catch (e) {
-      yield TodoError("Failed to load todos");
+      emit(TodoError("Failed to load todos"));
     }
   }
 
-  Stream<TodoState> _mapAddOrUpdateTodoToState(Todo todo) async* {
+  Future<void> _onAddOrUpdateTodo(
+    AddOrUpdateTodo event,
+    Emitter<TodoState> emit,
+  ) async {
     try {
-      await repository.addOrUpdateTodo(todo);
-      yield* _mapLoadTodosToState();
+      await repository.addOrUpdateTodo(event.todo);
+      await _onLoadTodos(LoadTodos(), emit);
     } catch (e) {
-      yield TodoError("Failed to add/update todo");
+      emit(TodoError("Failed to add/update todo"));
     }
   }
 
-  Stream<TodoState> _mapDeleteTodoToState(String id) async* {
+  Future<void> _onDeleteTodo(
+    DeleteTodo event,
+    Emitter<TodoState> emit,
+  ) async {
     try {
-      await repository.deleteTodo(id);
-      yield* _mapLoadTodosToState();
+      await repository.deleteTodo(event.id);
+      await _onLoadTodos(LoadTodos(), emit);
     } catch (e) {
-      yield TodoError("Failed to delete todo");
+      emit(TodoError("Failed to delete todo"));
     }
   }
 }

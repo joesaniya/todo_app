@@ -1,12 +1,9 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/features/todo/domain/entities/to_do_modal.dart';
 import 'package:to_do_app/features/todo/presentation/blocs/todo_bloc.dart';
 import 'package:to_do_app/features/todo/presentation/blocs/todo_event.dart';
 import 'package:to_do_app/features/todo/presentation/blocs/todo_state.dart';
-
 
 class TodoPage extends StatelessWidget {
   @override
@@ -53,7 +50,12 @@ class TodoPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Add new todo logic
+          final newTodo = Todo(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            title: 'New Todo',
+            completed: false,
+          );
+          context.read<TodoBloc>().add(AddOrUpdateTodo(newTodo));
         },
         child: Icon(Icons.add),
       ),

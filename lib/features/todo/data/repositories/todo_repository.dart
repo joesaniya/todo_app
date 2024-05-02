@@ -1,9 +1,6 @@
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:to_do_app/features/todo/domain/entities/to_do_modal.dart';
 import 'package:to_do_app/features/todo/domain/repositories/todo_repository.dart';
-
 
 class FirebaseTodoRepository implements TodoRepository {
   final CollectionReference _todosCollection =
@@ -12,7 +9,7 @@ class FirebaseTodoRepository implements TodoRepository {
   @override
   Stream<List<Todo>> getTodos() {
     return _todosCollection.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) =>Todo(
+        .map((doc) => Todo(
               id: doc.id,
               title: doc['title'],
               completed: doc['completed'],
